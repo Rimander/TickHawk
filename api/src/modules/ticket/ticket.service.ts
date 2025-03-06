@@ -1,4 +1,8 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { GetFilesUseCase } from '../file/application/use-cases/get-files.use-case';
+import { GetFileUseCase } from '../file/application/use-cases/get-file.use-case';
+import { ActivateFilesUseCase } from '../file/application/use-cases/activate-files.use-case';
+import { FileExistsUseCase } from '../file/application/use-cases/file-exists.use-case';
 import { CreateCustomerTicketDto } from './dto/in/create-customer-ticket.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Ticket } from './schemas/ticket.schema';
@@ -19,7 +23,6 @@ import { UserService } from '../user/user.service';
 import { CreateTicketDto } from './dto/in/create-ticket.dto';
 import { TicketDto } from './dto/out/ticket.dto';
 import { FileTicket, FileTicketSchema } from './schemas/file-ticket.schema';
-import { FileService } from '../file/file.service';
 import { ReplyCommentCustomerTicketDto } from './dto/in/reply-comment-customer-ticket.dto';
 import { Comment, CommentSchema } from './schemas/comment.schema';
 import { Event, EventSchema } from './schemas/event.schema';
@@ -56,7 +59,10 @@ export class TicketService {
     private readonly departmentService: DepartmentServiceAdapter,
     private readonly companyService: CompanyServiceAdapter,
     private readonly userService: UserService,
-    private readonly fileService: FileService,
+    private readonly getFilesUseCase: GetFilesUseCase,
+    private readonly getFileUseCase: GetFileUseCase,
+    private readonly activateFilesUseCase: ActivateFilesUseCase,
+    private readonly fileExistsUseCase: FileExistsUseCase,
   ) {
     // Initialize related models
     this.companyModel = mongoose.model(CompanyTicket.name, CompanyTicketSchema);
@@ -113,7 +119,7 @@ export class TicketService {
         this.departmentService.getById(createTicket.departmentId),
         
         // Get files information
-        this.fileService.getFiles(createTicket.files)
+        this.getFilesUseCase.execute(createTicket.files)
       ]);
       
       // Validate all required entities exist
@@ -149,7 +155,7 @@ export class TicketService {
       const newTicket = await ticket.save();
       
       // Mark files as active (in use)
-      await this.fileService.activeFiles(createTicket.files);
+      await this.activateFilesUseCase.execute(createTicket.files);
       
       this.logger.debug(`Created ticket with ID: ${newTicket._id}`);
       
@@ -205,7 +211,7 @@ export class TicketService {
         
         // Get files information (if any)
         replyCommentCustomerTicketDto.files?.length > 0 
-          ? this.fileService.getFiles(replyCommentCustomerTicketDto.files)
+          ? this.getFilesUseCase.execute(replyCommentCustomerTicketDto.files)
           : [],
           
         // Get ticket
@@ -248,7 +254,7 @@ export class TicketService {
 
       // Mark files as active (if any)
       if (replyCommentCustomerTicketDto.files?.length > 0) {
-        await this.fileService.activeFiles(replyCommentCustomerTicketDto.files);
+        await this.activateFilesUseCase.execute(replyCommentCustomerTicketDto.files);
       }
 
       const ticketSaved = await ticket.save();
@@ -701,7 +707,7 @@ export class TicketService {
       throw new HttpException('TICKET_NOT_FOUND', 404);
     }
 
-    const fileTicket = await this.fileService.getFile(file);
+    const fileTicket = await this.getFileUseCase.execute(file);
 
     if (!fileTicket) {
       throw new HttpException('FILE_NOT_FOUND', 404);
@@ -905,9 +911,7 @@ export class TicketService {
     }
 
     // Check if the files exist
-    const files = await this.fileService.getFiles(
-      agentReplyDto.files,
-    );
+    const files = await this.getFilesUseCase.execute(agentReplyDto.files);
     if (!files) {
       throw new HttpException('FILES_NOT_FOUND', 404);
     }

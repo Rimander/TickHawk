@@ -35,7 +35,9 @@ import { ApiConsumes, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagge
 import { ProfileDto } from './dtos/out/profile.dto';
 import { Public } from 'src/config/public.decorator';
 import { UpdateProfileDto } from './dtos/in/update-profile.dto';
-import { FileService } from '../file/file.service';
+import { DeleteFileUseCase } from '../file/application/use-cases/delete-file.use-case';
+import { GetFileUseCase } from '../file/application/use-cases/get-file.use-case';
+import { FileExistsUseCase } from '../file/application/use-cases/file-exists.use-case';
 import { UserListDto } from './dtos/out/user-list.dto';
 import { AssignCompanyDto } from './dtos/in/assign-company.dto';
 import { CreateUserDto } from './dtos/in/create-user.dto';
@@ -47,7 +49,9 @@ export class UserController {
   
   constructor(
     private readonly userService: UserService,
-    private readonly fileService: FileService,
+    private readonly getFileUseCase: GetFileUseCase,
+    private readonly deleteFileUseCase: DeleteFileUseCase,
+    private readonly fileExistsUseCase: FileExistsUseCase,
   ) {}
 
   /**
@@ -196,7 +200,7 @@ export class UserController {
         }
         
         // Check if the file exists before trying to retrieve it
-        const fileExists = await this.fileService.fileExists(user._id);
+        const fileExists = await this.fileExistsUseCase.execute(user._id);
         if (!fileExists) {
           this.logger.debug(
             `Profile image ID ${user._id} doesn't exist, returning default`,
@@ -209,7 +213,7 @@ export class UserController {
         
         // If user has a profile image that exists, try to get it
         try {
-          const buffer = await this.fileService.getFile(user._id);
+          const buffer = await this.getFileUseCase.execute(user._id);
           res.writeHead(200, { 'Content-Type': 'image/png' });
           res.end(buffer);
           return;
@@ -222,11 +226,11 @@ export class UserController {
         // If user lookup fails, try direct file lookup by ID
         
         // Check if the ID is a valid file ID
-        const fileExists = await this.fileService.fileExists(id);
+        const fileExists = await this.fileExistsUseCase.execute(id);
         if (fileExists) {
           try {
             // As a fallback, try direct file lookup (legacy behavior)
-            const buffer = await this.fileService.getFile(id);
+            const buffer = await this.getFileUseCase.execute(id);
             res.writeHead(200, { 'Content-Type': 'image/png' });
             res.end(buffer);
             return;
