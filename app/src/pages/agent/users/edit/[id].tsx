@@ -24,6 +24,7 @@ function EditUser() {
   const [initialLoading, setInitialLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [profileImage, setProfileImage] = useState<File | null>(null)
+  const [deleteProfileImage, setDeleteProfileImage] = useState(false)
   
   const auth = useAuth()
   const navigate = useNavigate()
@@ -95,41 +96,69 @@ function EditUser() {
     }
 
     try {
-      // Create FormData for profile update with image
-      const formData = new FormData()
-      if (id) {
-        formData.append('_id', id)
-      }
-      formData.append('name', name)
-      formData.append('email', email)
-      formData.append('role', role)
-      formData.append('lang', lang)
+      // No need to create formData here anymore, as we'll create it specifically when needed
       
-      if (password) {
-        formData.append('password', password)
-      }
-      
-      if (profileImage) {
-        formData.append('image', profileImage)
-      }
-      
-      // Update the user basic info first
-      if (profileImage) {
-        // If there's an image, use multipart form-data
-        await auth.axiosClient.put(`/user/${id}/with-image`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
+      // First, handle profile image operations if needed
+      try {
+        // Handle delete profile image if requested
+        if (deleteProfileImage) {
+          await auth.axiosClient.post(`/user/${id}/remove-profile-image`);
+          toast.success("Profile image deleted successfully");
+        }
+        
+        // Then handle image upload if a new image is selected
+        if (profileImage) {
+          try {
+            console.log(`Uploading image for user ${id}`);
+            const imageFormData = new FormData();
+            
+            // Add the image with the key expected by the backend
+            imageFormData.append('image', profileImage);
+            
+            // Add other required fields - ensure we have the right structure
+            imageFormData.append('name', name);
+            imageFormData.append('email', email);
+            imageFormData.append('role', role);
+            imageFormData.append('lang', lang);
+            
+            if (password) {
+              imageFormData.append('password', password);
+            }
+            
+            // Log form data contents (for debugging)
+            console.log("Form data prepared with image and user data");
+            
+            // Upload image with user data - using the correct endpoint with ID parameter
+            const response = await auth.axiosClient.put(`/user/${id}/with-image`, imageFormData, {
+              headers: {
+                'Content-Type': 'multipart/form-data'
+              }
+            });
+            
+            console.log("Image upload response:", response);
+            toast.success("User profile updated with new image");
+            
+            // Skip the normal update since we've already updated everything
+            return;
+          } catch (uploadError: any) {
+            console.error("Error uploading image:", uploadError);
+            toast.error(`Error uploading image: ${uploadError.message || "Unknown error"}`);
+            throw uploadError;
           }
-        })
-      } else {
-        // If no image, use regular JSON
-        await auth.axiosClient.put(`/user/${id}`, {
-          _id: id,
-          name,
-          email,
-          lang,
-          ...(password ? { password } : {})
-        })
+        } else if (!deleteProfileImage) {
+          // If no image changes, just update the user data
+          await auth.axiosClient.put(`/user/${id}`, {
+            _id: id,
+            name,
+            email,
+            role,
+            lang,
+            ...(password ? { password } : {})
+          });
+        }
+      } catch (error) {
+        console.error("Error updating user profile:", error);
+        throw error; // Re-throw to be caught by the outer catch block
       }
       
       // Always update company assignment for any role (even if removing it)
@@ -204,6 +233,7 @@ function EditUser() {
                 <ProfileImageEdit 
                   userId={id} 
                   onImageChange={setProfileImage}
+                  onDelete={() => setDeleteProfileImage(true)}
                 />
               </div>
               

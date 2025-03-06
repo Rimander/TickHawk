@@ -365,6 +365,23 @@ export class UserController {
   }
   
   /**
+   * Delete profile image for any user (admin only)
+   * @param id User ID
+   * @returns Updated user profile
+   */
+  @Post('/:id/remove-profile-image')
+  @Roles(['admin'])
+  @ApiOperation({ summary: 'Delete profile image for any user (admin only)' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Profile image deleted successfully',
+    type: ProfileDto,
+  })
+  async removeUserProfileImage(@Param('id') id: string): Promise<ProfileDto> {
+    return await this.userService.removeProfileImage(new Types.ObjectId(id));
+  }
+  
+  /**
    * Update a user with profile image (admin only)
    * @param id User ID
    * @param updateProfileDto Update profile data
