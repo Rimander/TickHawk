@@ -149,7 +149,11 @@ export class TicketService {
         content: createTicket.content,
         content_user: plainToInstance(this.userTicketModel, user),
         department: plainToInstance(this.departmentTicketModel, department),
-        files: files.map((file) => plainToInstance(this.fileTicketModel, file)),
+        files: files.map((file) => plainToInstance(this.fileTicketModel, {
+          _id: file.id,
+          name: file.name,
+          mimetype: file.mimetype
+        })),
       });
       
       const newTicket = await ticket.save();
@@ -244,7 +248,11 @@ export class TicketService {
       const comment = plainToInstance(this.commentTicketModel, {
         user: plainToInstance(this.userTicketModel, user),
         content: replyCommentCustomerTicketDto.content,
-        files: files?.map(file => plainToInstance(this.fileTicketModel, file)) || [],
+        files: files?.map(file => plainToInstance(this.fileTicketModel, {
+          _id: file.id,
+          name: file.name,
+          mimetype: file.mimetype
+        })) || [],
         createdAt: new Date(),
         updatedAt: new Date()
       }) as any;
@@ -921,7 +929,11 @@ export class TicketService {
       user: plainToInstance(this.userTicketModel, user),
       content: agentReplyDto.content,
       hours: agentReplyDto.hours || 0,
-      files: files.map((file) => plainToInstance(this.fileTicketModel, file)),
+      files: files.map((file) => plainToInstance(this.fileTicketModel, {
+        _id: file.id,
+        name: file.name,
+        mimetype: file.mimetype
+      })),
     }) as any;
 
     ticket.comments.push(comment);
