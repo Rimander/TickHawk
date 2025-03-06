@@ -21,8 +21,8 @@ function Users() {
 
   const loadCompanies = React.useCallback(() => {
     auth.axiosClient.get('/company')
-      .then((response: { data: CompanyTicket[] }) => {
-        setCompanies(response.data)
+      .then((response: { data: { companies: CompanyTicket[] } }) => {
+        setCompanies(response.data.companies)
       })
       .catch((error: unknown) => {
         console.error('Error loading companies:', error)

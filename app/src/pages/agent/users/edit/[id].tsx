@@ -54,7 +54,12 @@ function EditUser() {
         
         // Fetch companies for dropdown
         const companiesResponse = await auth.axiosClient.get('/company')
-        setCompanies(companiesResponse.data)
+        if (companiesResponse.data && companiesResponse.data.companies) {
+          setCompanies(companiesResponse.data.companies)
+        } else {
+          console.error('Unexpected companies response format:', companiesResponse.data)
+          setCompanies([])
+        }
         
         // Fetch departments for dropdown (if role is agent)
         const departmentsResponse = await auth.axiosClient.get('/department')

@@ -25,10 +25,15 @@ function AgentReports() {
       axiosClient
         .get("/company")
         .then((response: any) => {
-          setCompanies(response.data);
-          // Set default company selection if available
-          if (response.data.length > 0) {
-            setSelectedCompanyId(response.data[0]._id);
+          if (response.data && response.data.companies) {
+            setCompanies(response.data.companies);
+            // Set default company selection if available
+            if (response.data.companies.length > 0) {
+              setSelectedCompanyId(response.data.companies[0]._id);
+            }
+          } else {
+            console.error("Unexpected companies data format:", response.data);
+            setCompanies([]);
           }
         })
         .catch((err: any) => {
