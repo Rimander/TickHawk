@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Document } from 'mongoose';
 
-export type ContractSchema = HydratedDocument<Contract>;
+export type ContractDocument = HydratedDocument<Contract>;
 
 @Schema()
 export class Contract extends Document {
@@ -43,7 +43,6 @@ export class Contract extends Document {
 }
 
 export const ContractSchema = SchemaFactory.createForClass(Contract);
-
 
 ContractSchema.set('toJSON', {
   virtuals: true,

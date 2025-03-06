@@ -24,13 +24,13 @@ function TicketFilter({ onFilterChange }: { onFilterChange: (departmentId: strin
 
     // Cargar compañías
     auth.axiosClient
-      .get('/company')
-      .then((response: { data: CompanyTicket[] }) => {
-        setCompanies(response.data)
+      .get("/company")
+      .then((response: { data: { companies: CompanyTicket[] } }) => {
+        setCompanies(response.data.companies);
       })
       .catch((error: any) => {
-        console.error('Error fetching companies', error)
-      })
+        console.error("Error fetching companies", error);
+      });
   }, [auth.axiosClient])
 
   const handleDepartmentChange = (event: React.ChangeEvent<HTMLSelectElement>) => {

@@ -13,8 +13,8 @@ function Companies() {
   const loadCompanies = React.useCallback(() => {
     setLoading(true)
     auth.axiosClient.get('/company')
-      .then((response: { data: CompanyTicket[] }) => {
-        setCompanies(response.data)
+      .then((response: { data: any }) => {
+        setCompanies(response.data.companies);
         setError(false)
       })
       .catch((error: unknown) => {
@@ -90,7 +90,7 @@ function Companies() {
                 </thead>
                 <tbody>
                   {companies.length === 0 ? (
-                    <tr>
+                    <tr key={0}>
                       <td colSpan={4} className="px-6 py-4 text-center">No companies found</td>
                     </tr>
                   ) : (

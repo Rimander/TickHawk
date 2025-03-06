@@ -1,17 +1,20 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, now, Document } from 'mongoose';
+import { Document, HydratedDocument, now } from 'mongoose';
 import { Contract, ContractSchema } from './contract.schema';
 
-export type CompanySchema = HydratedDocument<Company>;
+export type CompanyDocument = HydratedDocument<Company>;
 
 @Schema()
 export class Company extends Document {
   @Prop({
     required: true,
+    unique: true
   })
   name: string;
 
-  @Prop()
+  @Prop({
+    required: true
+  })
   email: string;
 
   @Prop({ type: [ContractSchema], default: [] })
@@ -26,7 +29,7 @@ export class Company extends Document {
 
 export const CompanySchema = SchemaFactory.createForClass(Company);
 
-// Update updatedAt
+// Update updatedAt on every save
 CompanySchema.pre('save', function (next) {
   this.updatedAt = now();
   next();

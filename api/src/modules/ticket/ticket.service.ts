@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Ticket } from './schemas/ticket.schema';
 import mongoose, { Model, Types } from 'mongoose';
 import { DepartmentService } from '../department/department.service';
-import { CompanyService } from '../company/company.service';
+import { CompanyServiceAdapter } from './ticket.service.adapter';
 import {
   CompanyTicket,
   CompanyTicketSchema,
@@ -54,7 +54,7 @@ export class TicketService {
   constructor(
     @InjectModel(Ticket.name) private readonly ticketModel: Model<Ticket>,
     private readonly departmentService: DepartmentService,
-    private readonly companyService: CompanyService,
+    private readonly companyService: CompanyServiceAdapter,
     private readonly userService: UserService,
     private readonly fileService: FileService,
   ) {
