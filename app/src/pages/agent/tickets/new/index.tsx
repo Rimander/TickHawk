@@ -73,7 +73,13 @@ function NewTicket() {
         }
         
         const data = await response.json()
-        setCompanies(data)
+        // La respuesta contiene un objeto con la propiedad 'companies'
+        if (data && data.companies) {
+          setCompanies(data.companies)
+        } else {
+          console.error('Unexpected companies response format:', data)
+          setCompanies([])
+        }
       } catch (err) {
         setError('Error fetching companies')
         console.error(err)

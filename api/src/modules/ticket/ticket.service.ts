@@ -3,7 +3,7 @@ import { CreateCustomerTicketDto } from './dto/in/create-customer-ticket.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Ticket } from './schemas/ticket.schema';
 import mongoose, { Model, Types } from 'mongoose';
-import { DepartmentService } from '../department/department.service';
+import { DepartmentServiceAdapter } from './department.service.adapter';
 import { CompanyServiceAdapter } from './ticket.service.adapter';
 import {
   CompanyTicket,
@@ -53,7 +53,7 @@ export class TicketService {
 
   constructor(
     @InjectModel(Ticket.name) private readonly ticketModel: Model<Ticket>,
-    private readonly departmentService: DepartmentService,
+    private readonly departmentService: DepartmentServiceAdapter,
     private readonly companyService: CompanyServiceAdapter,
     private readonly userService: UserService,
     private readonly fileService: FileService,
