@@ -16,18 +16,27 @@ export class GetCustomerTicketsUseCase {
   ) {}
 
   /**
-   * Gets all tickets belonging to a customer with pagination
+   * Gets all tickets belonging to a customer with pagination and optional filtering
    * @param auth The authenticated user information
    * @param page The page number (1-based)
+   * @param filters Optional filters for tickets (date range, limit)
    * @returns Paginated list of tickets
    */
-  async execute(auth: { id: string; role: string; companyId?: string }, page: number = 1): Promise<{
+  async execute(
+    auth: { id: string; role: string; companyId?: string }, 
+    page: number = 1,
+    filters?: {
+      startDate?: Date;
+      endDate?: Date;
+      limit?: number;
+    }
+  ): Promise<{
     tickets: TicketEntity[];
     total: number;
     page: number;
     limit: number;
   }> {
-    this.logger.debug(`Getting tickets for customer ${auth.id}, page ${page}`);
+    this.logger.debug(`Getting tickets for customer ${auth.id}, page ${page}, filters: ${JSON.stringify(filters || {})}`);
     
     // Validate that the user is a customer
     if (auth.role !== 'customer') {
@@ -40,12 +49,24 @@ export class GetCustomerTicketsUseCase {
     }
     
     try {
-      // Use repository to get tickets with pagination
-      const result = await this.ticketRepository.findAll({
+      // Prepare query options
+      const queryOptions: any = {
         page: page,
-        limit: 10, // Fixed limit for customer tickets
+        limit: filters?.limit || 10,
         customerId: auth.id
-      });
+      };
+      
+      // Apply date filters if provided
+      if (filters?.startDate) {
+        queryOptions.startDate = filters.startDate;
+      }
+      
+      if (filters?.endDate) {
+        queryOptions.endDate = filters.endDate;
+      }
+      
+      // Use repository to get tickets with pagination
+      const result = await this.ticketRepository.findAll(queryOptions);
       
       return {
         tickets: result.tickets,

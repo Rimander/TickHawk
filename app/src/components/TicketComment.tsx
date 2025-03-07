@@ -43,7 +43,7 @@ export default function TicketComment({ className, comment }: TicketCommentProps
         </div>
       </div>
       <div className="mb-2 p-2 text-gray-900 dark:text-white">
-        {comment.minutes && (
+        {comment.minutes !== undefined && comment.minutes > 0  && (
         <div className="py-1.5 mb-2 px-3 inline-flex items-center rounded-lg bg-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 dark:bg-gray-700">
           <p className="text-gray-900 dark:text-white">{comment.minutes} min</p>
         </div>

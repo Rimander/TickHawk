@@ -5,6 +5,7 @@ import { Request, Response } from 'express';
 import { Roles } from 'src/config/guard/roles/roles.decorator';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
+import { BadRequestException } from 'src/common/exceptions';
 
 // Use cases
 import { CreateCustomerTicketUseCase } from '../../application/use-cases/create-customer-ticket.use-case';
@@ -127,6 +128,35 @@ export class TicketController {
       page: result.page,
       limit: result.limit,
     };
+  }
+  
+  @Get('customer/report')
+  @Roles(['customer'])
+  @ApiOperation({ summary: 'Get tickets for a customer within a date range for reporting' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns the customer tickets within the date range',
+    type: [TicketDto],
+  })
+  async getCustomerTicketsReport(
+    @Req() req: Request,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ): Promise<TicketDto[]> {
+    if (!startDate || !endDate) {
+      throw new BadRequestException('Start date and end date are required', 'MISSING_DATE_RANGE');
+    }
+    
+    // Get tickets with filters
+    const result = await this.getCustomerTicketsUseCase.execute(req.user, 1, {
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      limit: 1000, // High limit to get all tickets
+    });
+    
+    return plainToInstance(TicketDto, result.tickets, {
+      excludeExtraneousValues: true,
+    });
   }
 
   @Get('customer/:id')

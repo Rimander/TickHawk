@@ -33,7 +33,7 @@ function Reports () {
       const end = new Date(endDate).toISOString()
       
       // Fetch tickets with date range filter
-      const response = await axiosClient.get(`/ticket/company?startDate=${start}&endDate=${end}`)
+      const response = await axiosClient.get(`/ticket/customer/report?startDate=${start}&endDate=${end}`)
       
       if (response.data) {
         setTickets(response.data)

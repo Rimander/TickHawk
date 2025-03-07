@@ -140,7 +140,7 @@ function Ticket () {
                   events={ticket?.events}
                 />
               </div>
-              {ticket && ticket?.status === 'open' && (
+              {ticket && ticket?.status !== 'closed' && (
                 <form onSubmit={handleReply}>
                   <div className='w-full border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600'>
                     <div className='px-4 py-2 bg-white rounded-t-lg dark:bg-gray-800'>
@@ -205,7 +205,7 @@ function Ticket () {
                           </span>
                         </div>
                         <div className='inline-flex items-center'>
-                          <StatusBadge status='open' />
+                          <StatusBadge status={ticket?.status} />
                         </div>
                       </div>
                       <div className='flex items-center space-x-4'>

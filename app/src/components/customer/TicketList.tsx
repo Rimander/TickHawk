@@ -22,16 +22,17 @@ function TicketList () {
   const loadTickets = React.useCallback(() => {
     setLoading(true)
     auth.axiosClient
-      .get('/ticket/customer?page=' + page)
-      .then((response: { data: Ticket[] }) => {
-        setTickets(response.data)
-        setErrors(false)
+      .get("/ticket/customer?page=" + page)
+      .then((response: { data: { tickets: Ticket[] } }) => {
+        setTickets(response.data.tickets);
+        setErrors(false);
       })
       .catch((error: any) => {
-        setErrors(true)
-      }).finally(() => {
-        setLoading(false)
+        setErrors(true);
       })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [page, auth.axiosClient]);
 
   useEffect(() => {
