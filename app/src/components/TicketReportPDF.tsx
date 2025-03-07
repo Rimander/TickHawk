@@ -146,17 +146,21 @@ const styles = StyleSheet.create({
   }
 });
 
-// Status badge styles
+// Status badge styles - Updated to match web colors
 const getStatusStyle = (status: string) => {
   switch (status.toLowerCase()) {
     case 'open':
-      return { backgroundColor: '#3b82f6' }; // blue
-    case 'in progress':
-      return { backgroundColor: '#f59e0b' }; // amber
+      return { backgroundColor: '#22c55e' }; // green
+    case 'in-progress':
+      return { backgroundColor: '#a855f7' }; // purple
     case 'closed':
-      return { backgroundColor: '#10b981' }; // green
+      return { backgroundColor: '#ef4444' }; // red
     case 'pending':
-      return { backgroundColor: '#6366f1' }; // indigo
+      return { backgroundColor: '#a855f7' }; // purple
+    case 'resolved':
+      return { backgroundColor: '#22c55e' }; // green
+    case 'in-review':
+      return { backgroundColor: '#f97316' }; // orange
     default:
       return { backgroundColor: '#9ca3af' }; // gray
   }
@@ -279,7 +283,15 @@ const TicketReportPDF: React.FC<TicketReportPDFProps> = ({
                 </View>
                 <View style={[styles.tableCol, styles.statusCol]}>
                   <View style={[styles.statusBadge, getStatusStyle(ticket.status)]}>
-                    <Text style={{ color: 'white', fontSize: 8 }}>{ticket.status}</Text>
+                    <Text style={{ color: 'white', fontSize: 8 }}>
+                      {ticket.status === 'open' ? 'Open' :
+                       ticket.status === 'in-progress' ? 'In progress' :
+                       ticket.status === 'closed' ? 'Closed' :
+                       ticket.status === 'pending' ? 'Pending' :
+                       ticket.status === 'resolved' ? 'Resolved' :
+                       ticket.status === 'in-review' ? 'In review' :
+                       ticket.status}
+                    </Text>
                   </View>
                 </View>
                 <View style={[styles.tableCol, styles.priorityCol]}>

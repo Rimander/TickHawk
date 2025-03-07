@@ -243,6 +243,13 @@ function AgentTicketView() {
     const formData = new FormData(form);
 
     const content = formData.get("content")?.toString();
+    const minutesInput = formData.get("minutes")?.toString();
+    
+    // Convertir la entrada de tiempo en un número
+    let minutes = 0;
+    if (minutesInput) {
+      minutes = parseInt(minutesInput, 10); // Usamos directamente minutos
+    }
 
     if (!content || content.length < 2 || content.length > 600) {
       toast.error("Reply must be between 2 and 600 characters");
@@ -253,6 +260,7 @@ function AgentTicketView() {
     const replyData = {
       _id: id,
       content,
+      minutes: minutes, // Enviamos el tiempo en minutos
       files: files.map((file) => file._id),
     };
 
@@ -263,6 +271,8 @@ function AgentTicketView() {
         toast.success("Reply sent");
         setFiles([]);
         loadTicket();
+        // clear form
+        form.reset();
       })
       .catch((error: any) => {
         console.error("Error sending reply:", error);
@@ -419,22 +429,39 @@ function AgentTicketView() {
                     ></textarea>
                   </div>
                   <div className="flex items-center justify-between px-3 py-2 border-t dark:border-gray-600">
-                    <div>
-                      {files.map((file: FileModel) => (
-                        <div key={file._id} className="flex items-center space-x-2">
-                          <FileIcon />
-                          <span className="text-sm font-medium text-gray-900 dark:text-white">{file.name}</span>
-                          <button
-                            type="button"
-                            className="text-sm font-medium text-red-500 dark:text-red-500"
-                            onClick={() => {
-                              setFiles(files.filter((f) => f._id !== file._id));
-                            }}
-                          >
-                            <CrossIcon />
-                          </button>
-                        </div>
-                      ))}
+                    <div className="flex items-center">
+                      <div className="flex items-center mr-4">
+                        <label htmlFor="minutes" className="text-sm font-medium text-gray-900 dark:text-white mr-2">
+                          Time spent:
+                        </label>
+                        <input
+                          type="number"
+                          id="minutes"
+                          name="minutes"
+                          min="0"
+                          step="1"
+                          defaultValue="0"
+                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 w-16 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                        />
+                        <span className="ml-1 text-sm text-gray-500 dark:text-gray-400">min</span>
+                      </div>
+                      <div>
+                        {files.map((file: FileModel) => (
+                          <div key={file._id} className="flex items-center space-x-2">
+                            <FileIcon />
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">{file.name}</span>
+                            <button
+                              type="button"
+                              className="text-sm font-medium text-red-500 dark:text-red-500"
+                              onClick={() => {
+                                setFiles(files.filter((f) => f._id !== file._id));
+                              }}
+                            >
+                              <CrossIcon />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                     <FilePicker onFilesUploaded={handleFilesUploaded} />
                   </div>

@@ -65,8 +65,6 @@ function ProfileImageEdit({ userId, onImageChange, onDelete }: ProfileImageEditP
         formData.append("lang", "en");
 
         try {
-          console.log(`Direct upload - sending image to endpoint /user/${userId}/with-image`);
-
           // Now upload the image
           const response = await auth.axiosClient.put(`/user/${userId}/with-image`, formData, {
             headers: {
@@ -90,15 +88,11 @@ function ProfileImageEdit({ userId, onImageChange, onDelete }: ProfileImageEditP
         formData.append("file", file);
 
         try {
-          console.log("Uploading image to user's own profile");
           const response = await auth.axiosClient.post("/file/profile", formData, {
             headers: {
               "Content-Type": "multipart/form-data",
             },
           });
-
-          console.log("Own profile image upload response:", response);
-
           if (response.status === 201) {
             toast.success("Profile image updated successfully");
             // Reload page to show the new image
@@ -126,14 +120,10 @@ function ProfileImageEdit({ userId, onImageChange, onDelete }: ProfileImageEditP
       // Use different endpoint based on whether editing own profile or another user's profile
       if (userId && userId !== auth.user?._id) {
         // Admin editing another user's profile
-        console.log(`Deleting profile image for user ${userId}`);
-        const response = await auth.axiosClient.post(`/user/${userId}/remove-profile-image`);
-        console.log("Delete profile image response:", response);
+        await auth.axiosClient.post(`/user/${userId}/remove-profile-image`);
       } else {
         // User editing their own profile
-        console.log("Deleting own profile image");
-        const response = await auth.axiosClient.post("/user/me/remove-profile-image");
-        console.log("Delete own profile image response:", response);
+        await auth.axiosClient.post("/user/me/remove-profile-image");
       }
       toast.success("Profile image removed successfully");
       // Reload page to show changes

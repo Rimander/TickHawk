@@ -110,7 +110,7 @@ function Users() {
             </h3>
             
             <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
+              <div className="flex-1 max-w-96">
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                     <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
@@ -120,7 +120,7 @@ function Users() {
                   <input
                     type="search"
                     id="user-search"
-                    className="block p-2.5 pl-10 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    className="block p-2.5 w-full pl-10 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                     placeholder="Search users..."
                     value={searchTerm}
                     onChange={handleSearchChange}
@@ -205,7 +205,7 @@ function Users() {
                           </td>
                           <td className="px-6 py-4">
                             {user.companyId ? 
-                              (companies.find(company => company._id === user.companyId)?.name || 'Unknown company') : 
+                              (user.company?.name || 'Unknown company') : 
                               (user.role === 'customer' ? 'No company assigned' : 'N/A')}
                           </td>
                           <td className="px-6 py-4">

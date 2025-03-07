@@ -10,6 +10,9 @@ export default function TicketReplies ({ comments, events }: any) {
     // Order comments and events by createdAt in same array
     if (!comments && !events) return
     
+    if (!comments) comments = []
+    if (!events) events = []
+    
     const replies = [
       ...comments.map((comment: any) => ({ ...comment, filter: 'comment' })),
       ...events.map((event: any) => ({ ...event, filter: 'event' }))

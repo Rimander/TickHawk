@@ -109,7 +109,6 @@ function EditUser() {
         // Then handle image upload if a new image is selected
         if (profileImage) {
           try {
-            console.log(`Uploading image for user ${id}`);
             const imageFormData = new FormData();
             
             // Add the image with the key expected by the backend
@@ -125,9 +124,6 @@ function EditUser() {
               imageFormData.append('password', password);
             }
             
-            // Log form data contents (for debugging)
-            console.log("Form data prepared with image and user data");
-            
             // Upload image with user data - using the correct endpoint with ID parameter
             const response = await auth.axiosClient.put(`/user/${id}/with-image`, imageFormData, {
               headers: {
@@ -135,7 +131,6 @@ function EditUser() {
               }
             });
             
-            console.log("Image upload response:", response);
             toast.success("User profile updated with new image");
             
             // Skip the normal update since we've already updated everything

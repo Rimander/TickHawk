@@ -11,6 +11,8 @@ function TicketList({ departmentId = '', companyId = '' }) {
   const [errors, setErrors] = useState(false)
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
+  const [totalTickets, setTotalTickets] = useState(0)
+  const [limit, setLimit] = useState(10)
 
   const navigate = useNavigate()
   const auth = useAuth()
@@ -32,8 +34,10 @@ function TicketList({ departmentId = '', companyId = '' }) {
     
     auth.axiosClient
       .get(url)
-      .then((response: { data: Ticket[] }) => {
-        setTickets(response.data)
+      .then((response: { data: { tickets: Ticket[], total: number, page: number, limit: number } }) => {
+        setTickets(response.data.tickets)
+        setTotalTickets(response.data.total)
+        setLimit(response.data.limit)
         setErrors(false)
       })
       .catch((error: any) => {
@@ -180,9 +184,12 @@ function TicketList({ departmentId = '', companyId = '' }) {
               ></path>
             </svg>
           </span>
+          <span className="mx-2 text-sm text-gray-600 dark:text-gray-400">
+            {totalTickets > 0 ? `Página ${page} de ${Math.ceil(totalTickets / limit)}` : 'No hay tickets'}
+          </span>
           <span 
           onClick={() => setPage(page + 1)}
-          className={`inline-flex justify-center p-1 text-gray-500 rounded cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white ${tickets.length <= 9 ? 'invisible' : 'block'}`}>
+          className={`inline-flex justify-center p-1 text-gray-500 rounded cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white ${tickets.length < limit || page * limit >= totalTickets ? 'invisible' : 'block'}`}>
             <svg
               className='w-7 h-7'
               fill='currentColor'

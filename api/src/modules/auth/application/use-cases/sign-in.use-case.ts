@@ -47,6 +47,7 @@ export class SignInUseCase {
     const payload = {
       sub: user._id,
       id: user._id,
+      name: user.name,
       email: user.email,
       role: user.role,
       departmentIds: user.departmentIds,
