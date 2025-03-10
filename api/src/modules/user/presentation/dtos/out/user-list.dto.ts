@@ -14,4 +14,13 @@ export class UserListDto {
 
   @Expose()
   limit: number;
+
+  constructor(data?: { users: ProfileDto[], total: number, page: number, limit: number }) {
+    if (data) {
+      this.users = data.users;
+      this.total = data.total;
+      this.page = data.page;
+      this.limit = data.limit;
+    }
+  }
 }

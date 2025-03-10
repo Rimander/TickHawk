@@ -1,15 +1,16 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { MailerService } from '@nestjs-modules/mailer';
-import { UserService } from 'src/modules/user/user.service';
+import { USER_REPOSITORY, UserRepository } from 'src/modules/user/domain/ports/user.repository';
 
 @Injectable()
 export class ForgotPasswordUseCase {
   private readonly logger = new Logger(ForgotPasswordUseCase.name);
 
   constructor(
-    private readonly userService: UserService,
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly mailerService: MailerService
@@ -19,7 +20,7 @@ export class ForgotPasswordUseCase {
     this.logger.debug(`Processing forgot password request for: ${email}`);
     
     // Find the user by email
-    const user = await this.userService.findOne(email);
+    const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
       this.logger.warn(`User not found for forgot password: ${email}`);

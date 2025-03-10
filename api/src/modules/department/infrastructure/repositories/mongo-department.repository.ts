@@ -4,7 +4,7 @@ import { Model, Types } from 'mongoose';
 import { DepartmentRepository } from '../../domain/ports/department.repository';
 import { DepartmentEntity } from '../../domain/entities/department.entity';
 import { Department, DepartmentDocument } from '../schemas/department.schema';
-import { User } from 'src/modules/user/schemas/user.schema';
+import { User } from 'src/modules/user/infrastructure/schemas/user.schema';
 
 @Injectable()
 export class MongoDepartmentRepository implements DepartmentRepository {

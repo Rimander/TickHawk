@@ -3,7 +3,6 @@ import { APP_PIPE } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from '../user/schemas/user.schema';
 
 // Presentation layer
 import { DepartmentController } from './presentation/controllers/department.controller';
@@ -25,6 +24,7 @@ import { GetDepartmentUsersUseCase } from './application/use-cases/get-departmen
 import { AssignUserUseCase } from './application/use-cases/assign-user.use-case';
 import { RemoveUserUseCase } from './application/use-cases/remove-user.use-case';
 import { DepartmentEventListener } from './application/events/department-event.listener';
+import { User, UserSchema } from '../user/infrastructure/schemas/user.schema';
 
 @Global()
 @Module({

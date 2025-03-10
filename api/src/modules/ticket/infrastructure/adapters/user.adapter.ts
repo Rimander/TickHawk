@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserService } from '../../../user/user.service';
+import { GetUserUseCase } from '../../../user/application/use-cases/get-user.use-case';
 import { UserProvider } from '../../domain/ports/user.provider';
 import { UserTicketEntity } from '../../domain/entities/user-ticket.entity';
 import { Types } from 'mongoose';
@@ -10,7 +10,7 @@ import { Types } from 'mongoose';
 @Injectable()
 export class UserAdapter implements UserProvider {
   constructor(
-    private readonly userService: UserService
+    private readonly getUserUseCase: GetUserUseCase
   ) {}
 
   /**
@@ -19,7 +19,7 @@ export class UserAdapter implements UserProvider {
    */
   async findById(id: string): Promise<{ id: string; name: string; email: string; role: string; companyId?: string } | null> {
     try {
-      const user = await this.userService.findById(new Types.ObjectId(id));
+      const user = await this.getUserUseCase.execute(id);
       if (!user) return null;
       
       return {
@@ -40,7 +40,7 @@ export class UserAdapter implements UserProvider {
    */
   async exists(id: string): Promise<boolean> {
     try {
-      const user = await this.userService.findById(new Types.ObjectId(id));
+      const user = await this.getUserUseCase.execute(id);
       return !!user;
     } catch (error) {
       return false;
@@ -54,7 +54,7 @@ export class UserAdapter implements UserProvider {
    */
   async belongsToCompany(userId: string, companyId: string): Promise<boolean> {
     try {
-      const user = await this.userService.findById(new Types.ObjectId(userId));
+      const user = await this.getUserUseCase.execute(userId);
       if (!user || !user.companyId) return false;
       
       return user.companyId.toString() === companyId;

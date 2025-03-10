@@ -48,4 +48,17 @@ export class ProfileDto {
   @Expose()
   @ApiProperty()
   departmentIds: string[];
+
+  constructor(user?: any) {
+    if (user) {
+      this._id = user._id?.toString();
+      this.name = user.name;
+      this.email = user.email;
+      this.lang = user.lang;
+      this.role = user.role;
+      this.companyId = user.companyId?.toString();
+      this.company = user.company;
+      this.departmentIds = user.departmentIds?.map(id => id.toString());
+    }
+  }
 }

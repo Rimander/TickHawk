@@ -11,36 +11,39 @@ import {
   Query,
   Req,
   Res,
-  StreamableFile,
-  UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import {
-  BadRequestException,
-  ConflictException,
-  InternalServerException,
-  NotFoundException,
-  ServiceException
-} from 'src/common/exceptions';
+import { ServiceException } from 'src/common/exceptions';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JWTGuard } from 'src/config/guard/jwt/jwt.guard';
 import { Roles } from 'src/config/guard/roles/roles.decorator';
 import { RolesGuard } from 'src/config/guard/roles/roles.guard';
 import { Request } from 'express';
-import { UserService } from './user.service';
 import { Types } from 'mongoose';
-import { AssignDepartmentDto } from './dtos/in/assign-department.dto';
 import { ApiConsumes, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { ProfileDto } from './dtos/out/profile.dto';
 import { Public } from 'src/config/public.decorator';
-import { UpdateProfileDto } from './dtos/in/update-profile.dto';
-import { DeleteFileUseCase } from '../file/application/use-cases/delete-file.use-case';
-import { GetFileUseCase } from '../file/application/use-cases/get-file.use-case';
-import { FileExistsUseCase } from '../file/application/use-cases/file-exists.use-case';
-import { UserListDto } from './dtos/out/user-list.dto';
-import { AssignCompanyDto } from './dtos/in/assign-company.dto';
-import { CreateUserDto } from './dtos/in/create-user.dto';
+
+// DTOs
+import { ProfileDto } from '../dtos/out/profile.dto';
+import { UpdateProfileDto } from '../dtos/in/update-profile.dto';
+import { UserListDto } from '../dtos/out/user-list.dto';
+import { AssignCompanyDto } from '../dtos/in/assign-company.dto';
+import { CreateUserDto } from '../dtos/in/create-user.dto';
+import { AssignDepartmentDto } from '../dtos/in/assign-department.dto';
+
+// Use Cases
+import { GetUserUseCase } from '../../application/use-cases/get-user.use-case';
+import { GetUsersUseCase } from '../../application/use-cases/get-users.use-case';
+import { CreateUserUseCase } from '../../application/use-cases/create-user.use-case';
+import { UpdateUserUseCase } from '../../application/use-cases/update-user.use-case';
+import { AssignCompanyUseCase } from '../../application/use-cases/assign-company.use-case';
+import { AssignDepartmentUseCase } from '../../application/use-cases/assign-department.use-case';
+
+// File module use cases
+import { GetFileUseCase } from '../../../file/application/use-cases/get-file.use-case';
+import { DeleteFileUseCase } from '../../../file/application/use-cases/delete-file.use-case';
+import { FileExistsUseCase } from '../../../file/application/use-cases/file-exists.use-case';
 
 @Controller('user')
 @UseGuards(JWTGuard, RolesGuard)
@@ -48,7 +51,15 @@ export class UserController {
   private readonly logger = new Logger(UserController.name);
   
   constructor(
-    private readonly userService: UserService,
+    // User use cases
+    private readonly getUserUseCase: GetUserUseCase,
+    private readonly getUsersUseCase: GetUsersUseCase,
+    private readonly createUserUseCase: CreateUserUseCase,
+    private readonly updateUserUseCase: UpdateUserUseCase,
+    private readonly assignCompanyUseCase: AssignCompanyUseCase,
+    private readonly assignDepartmentUseCase: AssignDepartmentUseCase,
+    
+    // File use cases
     private readonly getFileUseCase: GetFileUseCase,
     private readonly deleteFileUseCase: DeleteFileUseCase,
     private readonly fileExistsUseCase: FileExistsUseCase,
@@ -70,8 +81,9 @@ export class UserController {
   async getMe(@Req() request: Request): Promise<ProfileDto> {
     try {
       const userData = request.user;
-      const id = new Types.ObjectId(userData.id as string);
-      return await this.userService.findById(id);
+      const id = userData.id as string;
+      const user = await this.getUserUseCase.execute(id);
+      return new ProfileDto(user);
     } catch (error) {
       this.logger.error(`Error retrieving user profile: ${error.message}`);
       
@@ -100,7 +112,10 @@ export class UserController {
     @Req() request: Request,
     @Body() updateProfileDto: UpdateProfileDto,
   ): Promise<ProfileDto> {
-    return await this.userService.update(updateProfileDto);
+    const userData = request.user;
+    const id = userData.id as string;
+    const user = await this.updateUserUseCase.execute(id, updateProfileDto);
+    return new ProfileDto(user);
   }
 
   /**
@@ -116,7 +131,10 @@ export class UserController {
     description: 'Department assigned successfully',
   })
   async assign(@Body() assignDepartmentDto: AssignDepartmentDto) {
-    await this.userService.assignDepartment(assignDepartmentDto);
+    await this.assignDepartmentUseCase.execute(
+      assignDepartmentDto.userId.toString(), 
+      assignDepartmentDto.departmentId.toString()
+    );
     return HttpStatus.CREATED;
   }
   
@@ -134,7 +152,11 @@ export class UserController {
     type: ProfileDto,
   })
   async assignCompany(@Body() assignCompanyDto: AssignCompanyDto): Promise<ProfileDto> {
-    return await this.userService.assignCompany(assignCompanyDto);
+    const user = await this.assignCompanyUseCase.execute(
+      assignCompanyDto.userId.toString(),
+      assignCompanyDto.companyId?.toString() || null
+    );
+    return new ProfileDto(user);
   }
   
   /**
@@ -151,7 +173,8 @@ export class UserController {
     type: ProfileDto,
   })
   async createUser(@Body() createUserDto: CreateUserDto): Promise<ProfileDto> {
-    return await this.userService.createUser(createUserDto);
+    const user = await this.createUserUseCase.execute(createUserDto);
+    return new ProfileDto(user);
   }
 
   /**
@@ -175,35 +198,26 @@ export class UserController {
     let defaultImagePath;
     try {
       // First try the production path (when compiled to dist)
-      defaultImagePath = path.join(__dirname, '../../../assets/tickhawk.png');
+      defaultImagePath = path.join(__dirname, '../../../../../assets/tickhawk.png');
       // Check if file exists at this path
       fs.accessSync(defaultImagePath, fs.constants.R_OK);
       this.logger.debug(`Using production assets path: ${defaultImagePath}`);
     } catch (err) {
       // Fallback to development path
-      defaultImagePath = path.join(__dirname, '../../assets/tickhawk.png');
+      defaultImagePath = path.join(__dirname, '../../../../assets/tickhawk.png');
       this.logger.debug(`Using development assets path: ${defaultImagePath}`);
     }
     
     try {
       // First try to get the user to check if they have a profile image
       try {
-        const user = await this.userService.findById(new Types.ObjectId(id));
-        
-        // If user doesn't exist or has no profile image, return default
-        if (!user) {
-          this.logger.debug(`User ${id} has no profile image, returning default`);
-          const defaultImage = fs.readFileSync(defaultImagePath);
-          res.writeHead(200, { 'Content-Type': 'image/png' });
-          res.end(defaultImage);
-          return;
-        }
+        const user = await this.getUserUseCase.execute(id);
         
         // Check if the file exists before trying to retrieve it
-        const fileExists = await this.fileExistsUseCase.execute(user._id);
+        const fileExists = await this.fileExistsUseCase.execute(user.id);
         if (!fileExists) {
           this.logger.debug(
-            `Profile image ID ${user._id} doesn't exist, returning default`,
+            `Profile image ID ${user.id} doesn't exist, returning default`,
           );
           const defaultImage = fs.readFileSync(defaultImagePath);
           res.writeHead(200, { 'Content-Type': 'image/png' });
@@ -213,7 +227,7 @@ export class UserController {
         
         // If user has a profile image that exists, try to get it
         try {
-          const buffer = await this.getFileUseCase.execute(user._id);
+          const buffer = await this.getFileUseCase.execute(user.id);
           res.writeHead(200, { 'Content-Type': 'image/png' });
           res.end(buffer);
           return;
@@ -255,14 +269,14 @@ export class UserController {
       try {
         // First try production path
         try {
-          const prodPath = path.join(__dirname, '../../../assets/tickhawk.png');
+          const prodPath = path.join(__dirname, '../../../../../assets/tickhawk.png');
           const defaultImage = fs.readFileSync(prodPath);
           res.writeHead(200, { 'Content-Type': 'image/png' });
           res.end(defaultImage);
           return;
         } catch (prodError) {
           // Try development path
-          const devPath = path.join(__dirname, '../../assets/tickhawk.png');
+          const devPath = path.join(__dirname, '../../../../assets/tickhawk.png');
           const defaultImage = fs.readFileSync(devPath);
           res.writeHead(200, { 'Content-Type': 'image/png' });
           res.end(defaultImage);
@@ -302,11 +316,18 @@ export class UserController {
     @Query('search') search?: string,
     @Query('role') role?: string,
   ): Promise<UserListDto> {
-    return await this.userService.findAll({
+    const result = await this.getUsersUseCase.execute({
       page: page ? +page : 1,
       limit: limit ? +limit : 10,
       search,
       role,
+    });
+    
+    return new UserListDto({
+      users: result.users.map(user => new ProfileDto(user)),
+      total: result.total,
+      page: result.page,
+      limit: result.limit
     });
   }
   
@@ -324,7 +345,8 @@ export class UserController {
     type: ProfileDto,
   })
   async getUserById(@Param('id') id: string): Promise<ProfileDto> {
-    return await this.userService.findById(new Types.ObjectId(id));
+    const user = await this.getUserUseCase.execute(id);
+    return new ProfileDto(user);
   }
   
   /**
@@ -345,8 +367,8 @@ export class UserController {
     @Param('id') id: string,
     @Body() updateProfileDto: UpdateProfileDto,
   ): Promise<ProfileDto> {
-    updateProfileDto._id = id;
-    return await this.userService.update(updateProfileDto);
+    const user = await this.updateUserUseCase.execute(id, updateProfileDto);
+    return new ProfileDto(user);
   }
   
   /**
@@ -364,8 +386,14 @@ export class UserController {
   })
   async removeProfileImage(@Req() request: Request): Promise<ProfileDto> {
     const userData = request.user;
-    const id = new Types.ObjectId(userData.id as string);
-    return await this.userService.removeProfileImage(id);
+    const id = userData.id as string;
+    
+    // Delete profile image
+    await this.deleteFileUseCase.execute(id);
+    
+    // Return updated user
+    const user = await this.getUserUseCase.execute(id);
+    return new ProfileDto(user);
   }
   
   /**
@@ -382,7 +410,12 @@ export class UserController {
     type: ProfileDto,
   })
   async removeUserProfileImage(@Param('id') id: string): Promise<ProfileDto> {
-    return await this.userService.removeProfileImage(new Types.ObjectId(id));
+    // Delete profile image
+    await this.deleteFileUseCase.execute(id);
+    
+    // Return updated user
+    const user = await this.getUserUseCase.execute(id);
+    return new ProfileDto(user);
   }
   
   /**
@@ -405,8 +438,11 @@ export class UserController {
   async updateUserWithImage(
     @Param('id') id: string,
     @Body() updateProfileDto: UpdateProfileDto,
-    @UploadedFile() file: Express.Multer.File,
+    // @UploadedFile() file: Express.Multer.File,
   ): Promise<ProfileDto> {
-    return await this.userService.updateProfile(id, updateProfileDto, file);
+    // Note: We need to implement file upload with the new architecture
+    // This is a temporary implementation without file upload
+    const user = await this.updateUserUseCase.execute(id, updateProfileDto);
+    return new ProfileDto(user);
   }
 }

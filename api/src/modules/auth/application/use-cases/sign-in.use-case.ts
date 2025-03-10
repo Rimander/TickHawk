@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { UserService } from 'src/modules/user/user.service';
+import { USER_REPOSITORY, UserRepository } from 'src/modules/user/domain/ports/user.repository';
 import { AUTH_REPOSITORY, AuthRepository } from '../../domain/ports/auth.repository';
 import { TokenEntity } from '../../domain/entities/token.entity';
 import { toMs } from 'ms-typescript';
@@ -14,7 +14,8 @@ export class SignInUseCase {
   constructor(
     @Inject(AUTH_REPOSITORY)
     private readonly authRepository: AuthRepository,
-    private readonly userService: UserService,
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -22,7 +23,7 @@ export class SignInUseCase {
   async execute(email: string, password: string): Promise<{ accessToken: string; refreshToken: string }> {
     this.logger.debug(`Sign in attempt for email: ${email}`);
     
-    const user = await this.userService.findOne(email);
+    const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
       this.logger.warn(`User not found for email: ${email}`);

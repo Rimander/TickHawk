@@ -2,7 +2,6 @@ import { Global, Module, ValidationPipe } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { APP_PIPE } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { User, UserSchema } from '../user/schemas/user.schema';
 
 // Presentation layer
 import { CompanyController } from './presentation/controllers/company.controller';
@@ -24,6 +23,7 @@ import { GetCompaniesUseCase } from './application/use-cases/get-companies.use-c
 import { AddContractUseCase } from './application/use-cases/add-contract.use-case';
 import { RemoveContractUseCase } from './application/use-cases/remove-contract.use-case';
 import { CompanyEventListener } from './application/events/company-event.listener';
+import { User, UserSchema } from '../user/infrastructure/schemas/user.schema';
 
 @Global()
 @Module({
