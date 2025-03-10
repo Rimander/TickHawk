@@ -65,7 +65,7 @@ function Reports () {
 
   return (
     <div>
-      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
+      <div className="bg-gray-50 dark:bg-gray-900">
         <div className="container px-4 pt-20 mx-auto sm:pt-24 md:pt-24 lg:px-0 dark:bg-gray-900">
           <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
             <h3 className="mb-4 text-xl font-semibold dark:text-white">Company Reports</h3>

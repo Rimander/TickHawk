@@ -109,7 +109,7 @@ function Ticket () {
   //TODO: Check if closed to not show reply form and show a message
   return (
     <div>
-      <div className='bg-gray-50 dark:bg-gray-900 min-h-screen'>
+      <div className='bg-gray-50 dark:bg-gray-900'>
         <div className='container px-4 pt-20 mx-auto sm:pt-24 md:pt-24 lg:px-0 dark:bg-gray-900'>
           <div className='grid gap-4 xl:grid-cols-3 2xl:grid-cols-4'>
             <div className='p-4 mb-5 bg-white border border-gray-200 rounded-lg shadow-sm xl:col-span-2 2xl:col-span-3 dark:border-gray-700 sm:p-6 dark:bg-gray-800'>

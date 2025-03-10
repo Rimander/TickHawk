@@ -2,16 +2,20 @@ import React from 'react'
 import TwSizeIndicator from 'components/TwSizeIndicator'
 import { Outlet } from 'react-router-dom'
 import Header from './Header'
+import Footer from '../Footer'
 
 function Layout () {
   //TODO: Check if user role is customer
   return (
-    <main className='bg-gray-50 dark:bg-gray-800 min-h-screen'>
+    <div className="flex flex-col bg-gray-50 dark:bg-gray-900 min-h-screen overflow-auto">
       <TwSizeIndicator />
       <Header />
-      <Outlet />
-    </main>
-  )
+      <main className="flex-1">
+        <Outlet />
+      </main>
+      <Footer />
+    </div>
+  );
 }
 
 export default Layout

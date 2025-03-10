@@ -338,7 +338,7 @@ function AgentTicketView() {
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div className="bg-gray-50 dark:bg-gray-900">
       <div className="container px-4 pt-20 mx-auto sm:pt-24 md:pt-24 lg:px-0 dark:bg-gray-900">
         <div className="grid gap-4 xl:grid-cols-3 2xl:grid-cols-4">
           {/* Main ticket content */}
