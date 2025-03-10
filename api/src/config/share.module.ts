@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 import config from './config';
 import { APP_GUARD } from '@nestjs/core';
 import { JWTGuard } from './guard/jwt/jwt.guard';
@@ -22,6 +23,7 @@ import { JWTGuard } from './guard/jwt/jwt.guard';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ScheduleModule.forRoot(),
     EventEmitterModule.forRoot({
       maxListeners: 20,
       wildcard: false,
@@ -58,6 +60,6 @@ import { JWTGuard } from './guard/jwt/jwt.guard';
       }),
     }),
   ],
-  exports: [JwtModule, MongooseModule, MailerModule, EventEmitterModule],
+  exports: [JwtModule, MongooseModule, MailerModule, EventEmitterModule, ScheduleModule],
 })
 export class ShareModule {}

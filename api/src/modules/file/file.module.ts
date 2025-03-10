@@ -15,6 +15,7 @@ import { ActivateFilesUseCase } from './application/use-cases/activate-files.use
 import { DeleteFileUseCase } from './application/use-cases/delete-file.use-case';
 import { FileExistsUseCase } from './application/use-cases/file-exists.use-case';
 import { FileEventListener } from './application/events/file-event.listener';
+import { FileCleanupService } from './infrastructure/services/file-cleanup.service';
 
 @Global()
 @Module({
@@ -22,6 +23,9 @@ import { FileEventListener } from './application/events/file-event.listener';
   providers: [
     // Event listeners
     FileEventListener,
+    
+    // Services
+    FileCleanupService,
     
     // Repositories
     {
