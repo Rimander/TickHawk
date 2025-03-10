@@ -41,6 +41,7 @@ import { UserModule } from '../user/user.module';
 import { FileModule } from '../file/file.module';
 import { UserUpdatedListener } from './listeners/user-updated.listener';
 import { CompanyEventsListener } from './listeners/company-events.listener';
+import { DepartmentEventsListener } from './listeners/department-events.listener';
 
 
 @Module({
@@ -97,6 +98,7 @@ import { CompanyEventsListener } from './listeners/company-events.listener';
     TicketEventListener,
     UserUpdatedListener,
     CompanyEventsListener,
+    DepartmentEventsListener,
   ],
   exports: [
     // Export use cases for other modules
