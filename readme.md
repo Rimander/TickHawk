@@ -22,6 +22,7 @@
 - Priority levels: Low, Medium, High, Critical
 - Status tracking: Open, In Progress, Resolved, Closed, Pending
 - Comment system with file attachments
+- Internal notes for agents and admins (invisible to customers)
 - Event history for all ticket changes
 
 ### 📁 **File Management**
