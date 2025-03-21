@@ -10,6 +10,7 @@ export type TicketCommentType = {
   };
   content: string;
   minutes?: number;
+  internal?: boolean;
   files?: {
     _id: string;
     name: string;
@@ -40,9 +41,14 @@ export default function TicketComment({ className, comment }: TicketCommentProps
           <p className="text-sm text-gray-600 dark:text-gray-400">
             <DateFormat date={comment.createdAt} />
           </p>
+          {comment.internal && (
+            <span className="ml-3 px-2 py-1 text-xs font-medium text-gray-800 bg-yellow-200 rounded-full dark:bg-yellow-700 dark:text-gray-100">
+              Internal Note
+            </span>
+          )}
         </div>
       </div>
-      <div className="mb-2 p-2 text-gray-900 dark:text-white">
+      <div className={`mb-2 p-2 text-gray-900 dark:text-white ${comment.internal ? 'bg-yellow-50 dark:bg-gray-700 rounded-lg border-l-4 border-yellow-400 dark:border-yellow-600' : ''}`}>
         {comment.minutes !== undefined && comment.minutes > 0  && (
         <div className="py-1.5 mb-2 px-3 inline-flex items-center rounded-lg bg-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 dark:bg-gray-700">
           <p className="text-gray-900 dark:text-white">{comment.minutes} min</p>

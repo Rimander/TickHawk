@@ -11,6 +11,7 @@ export class CommentEntity {
   content: string;
   minutes?: number;
   files: FileTicketEntity[];
+  internal?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 
@@ -21,6 +22,7 @@ export class CommentEntity {
     content: string;
     minutes?: number;
     files?: FileTicketEntity[];
+    internal?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
   }) {
@@ -30,6 +32,7 @@ export class CommentEntity {
     this.content = data.content;
     this.minutes = data.minutes || 0;
     this.files = data.files || [];
+    this.internal = data.internal || false;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
   }

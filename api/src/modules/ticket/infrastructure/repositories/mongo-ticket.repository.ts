@@ -99,6 +99,7 @@ export class MongoTicketRepository implements TicketRepository {
               });
             })
             .filter(Boolean),
+          internal: comment.internal || false,
           createdAt: comment.createdAt,
           updatedAt: comment.updatedAt,
         });
@@ -419,6 +420,7 @@ export class MongoTicketRepository implements TicketRepository {
         },
         content: comment.content,
         minutes: comment.minutes || 0,
+        internal: comment.internal || false,
         files:
           comment.files?.map((file) => ({
             _id: new Types.ObjectId(file.id),

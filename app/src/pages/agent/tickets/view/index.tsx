@@ -23,6 +23,7 @@ function AgentTicketView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [agents, setAgents] = useState<{ id: string; name: string }[]>([]);
+  const [replyMode, setReplyMode] = useState<'reply' | 'internal'>('reply');
   const [statusOptions] = useState([
     { value: "open", label: "Open" },
     { value: "in-progress", label: "In Progress" },
@@ -264,19 +265,22 @@ function AgentTicketView() {
       files: files.map((file) => file._id),
     };
 
+    // Determinar el endpoint según el modo (respuesta normal o comentario interno)
+    const endpoint = replyMode === 'reply' ? '/ticket/reply' : '/ticket/internal-comment';
+
     // Enviar respuesta al servidor
     auth.axiosClient
-      .post(`/ticket/reply`, replyData)
+      .post(endpoint, replyData)
       .then(() => {
-        toast.success("Reply sent");
+        toast.success(replyMode === 'reply' ? "Reply sent" : "Internal note added");
         setFiles([]);
         loadTicket();
         // clear form
         form.reset();
       })
       .catch((error: any) => {
-        console.error("Error sending reply:", error);
-        toast.error("Failed to send reply. Please try again.");
+        console.error(`Error sending ${replyMode}:`, error);
+        toast.error(`Failed to send ${replyMode}. Please try again.`);
       });
   };
 
@@ -416,15 +420,45 @@ function AgentTicketView() {
             {/* Reply form - only show if ticket is not closed */}
             {ticket && ticket.status !== "closed" && (
               <form onSubmit={handleReply}>
-                <div className="w-full border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
+                {/* Tabs for Reply and Internal Note */}
+                <div className="flex border-b border-gray-200 dark:border-gray-700 mb-2">
+                  <button
+                    type="button"
+                    className={`py-2 px-4 text-sm font-medium ${
+                      replyMode === 'reply'
+                        ? 'text-primary-600 border-b-2 border-primary-600 active dark:text-primary-500 dark:border-primary-500'
+                        : 'text-gray-500 hover:text-gray-600 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                    }`}
+                    onClick={() => setReplyMode('reply')}
+                  >
+                    Reply
+                  </button>
+                  <button
+                    type="button"
+                    className={`py-2 px-4 text-sm font-medium ${
+                      replyMode === 'internal'
+                        ? 'text-primary-600 border-b-2 border-primary-600 active dark:text-primary-500 dark:border-primary-500'
+                        : 'text-gray-500 hover:text-gray-600 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                    }`}
+                    onClick={() => setReplyMode('internal')}
+                  >
+                    Internal Note
+                  </button>
+                </div>
+              
+                <div className={`w-full border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 ${
+                  replyMode === 'internal' ? 'border-l-4 border-yellow-400 dark:border-yellow-600' : ''
+                }`}>
                   <div className="px-4 py-2 bg-white rounded-t-lg dark:bg-gray-800">
                     <label className="sr-only">Write your message</label>
                     <textarea
                       id="content"
                       name="content"
                       rows={8}
-                      className="w-full px-0 text-sm outline-none text-gray-900 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400"
-                      placeholder="Write your reply..."
+                      className={`w-full px-0 text-sm outline-none text-gray-900 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400 ${
+                        replyMode === 'internal' ? 'bg-yellow-50 dark:bg-gray-700' : ''
+                      }`}
+                      placeholder={replyMode === 'reply' ? "Write your reply..." : "Write an internal note (only visible to agents)..."}
                       required
                     ></textarea>
                   </div>
@@ -469,9 +503,13 @@ function AgentTicketView() {
                 <div className="pt-4 flex justify-end">
                   <button
                     type="submit"
-                    className="inline-flex items-end p-2 text-sm font-medium text-center text-white bg-primary-600 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-700"
+                    className={`inline-flex items-end p-2 text-sm font-medium text-center text-white rounded-lg focus:ring-4 hover:bg-opacity-90 ${
+                      replyMode === 'reply' 
+                        ? 'bg-primary-600 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-700' 
+                        : 'bg-yellow-500 focus:ring-yellow-200 dark:focus:ring-yellow-900 hover:bg-yellow-600'
+                    }`}
                   >
-                    Reply
+                    {replyMode === 'reply' ? 'Send Reply' : 'Add Internal Note'}
                   </button>
                 </div>
               </form>

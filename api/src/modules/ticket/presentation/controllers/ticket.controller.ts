@@ -19,6 +19,7 @@ import { GetTicketUseCase } from '../../application/use-cases/get-ticket.use-cas
 import { UpdateTicketStatusUseCase } from '../../application/use-cases/update-ticket-status.use-case';
 import { AssignTicketUseCase } from '../../application/use-cases/assign-ticket.use-case';
 import { ReplyAgentTicketUseCase } from '../../application/use-cases/reply-agent-ticket.use-case';
+import { AddInternalCommentUseCase } from '../../application/use-cases/add-internal-comment.use-case';
 
 // DTOs
 import { CreateCustomerTicketDto } from '../dtos/in/create-customer-ticket.dto';
@@ -26,6 +27,7 @@ import { ReplyCommentCustomerTicketDto } from '../dtos/in/reply-comment-customer
 import { UpdateTicketStatusDto } from '../dtos/in/update-ticket-status.dto';
 import { AssignAgentDto } from '../dtos/in/assign-agent.dto';
 import { AgentReplyTicketDto } from '../dtos/in/agent-reply-ticket.dto';
+import { AgentInternalCommentDto } from '../dtos/in/agent-internal-comment.dto';
 import { TicketDto } from '../dtos/out/ticket.dto';
 
 @ApiTags('Tickets')
@@ -44,6 +46,7 @@ export class TicketController {
     private readonly updateTicketStatusUseCase: UpdateTicketStatusUseCase,
     private readonly assignTicketUseCase: AssignTicketUseCase,
     private readonly replyAgentTicketUseCase: ReplyAgentTicketUseCase,
+    private readonly addInternalCommentUseCase: AddInternalCommentUseCase,
   ) {}
 
   @Post('customer')
@@ -119,6 +122,15 @@ export class TicketController {
       page = 1;
     }
     const result = await this.getCustomerTicketsUseCase.execute(req.user, page);
+    
+    // Filter out internal comments for customers
+    if (result.tickets) {
+      result.tickets.forEach(ticket => {
+        if (ticket.comments) {
+          ticket.comments = ticket.comments.filter(comment => !comment.internal);
+        }
+      });
+    }
 
     return {
       tickets: plainToInstance(TicketDto, result.tickets, {
@@ -154,6 +166,15 @@ export class TicketController {
       limit: 1000, // High limit to get all tickets
     });
     
+    // Filter out internal comments for customers
+    if (result.tickets) {
+      result.tickets.forEach(ticket => {
+        if (ticket.comments) {
+          ticket.comments = ticket.comments.filter(comment => !comment.internal);
+        }
+      });
+    }
+    
     return plainToInstance(TicketDto, result.tickets, {
       excludeExtraneousValues: true,
     });
@@ -172,6 +193,12 @@ export class TicketController {
     @Param('id') id: string,
   ): Promise<TicketDto> {
     const ticket = await this.getCustomerTicketUseCase.execute(req.user, id);
+    
+    // Filter out internal comments for customers
+    if (ticket.comments) {
+      ticket.comments = ticket.comments.filter(comment => !comment.internal);
+    }
+    
     return plainToInstance(TicketDto, ticket, {
       excludeExtraneousValues: true,
     });
@@ -329,6 +356,29 @@ export class TicketController {
       content: agentReplyDto.content,
       minutes: agentReplyDto.minutes,
       files: agentReplyDto.files,
+    });
+    return plainToInstance(TicketDto, ticket, {
+      excludeExtraneousValues: true,
+    });
+  }
+  
+  @Post('internal-comment')
+  @Roles(['admin', 'agent'])
+  @ApiOperation({ summary: 'Add internal comment to a ticket (only visible to agents/admins)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Internal comment added successfully',
+    type: TicketDto,
+  })
+  async addInternalComment(
+    @Body() internalCommentDto: AgentInternalCommentDto,
+    @Req() req: Request,
+  ): Promise<TicketDto> {
+    const ticket = await this.addInternalCommentUseCase.execute(req.user, {
+      _id: internalCommentDto._id,
+      content: internalCommentDto.content,
+      minutes: internalCommentDto.minutes,
+      files: internalCommentDto.files,
     });
     return plainToInstance(TicketDto, ticket, {
       excludeExtraneousValues: true,

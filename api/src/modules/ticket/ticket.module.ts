@@ -21,6 +21,7 @@ import { GetTicketUseCase } from './application/use-cases/get-ticket.use-case';
 import { UpdateTicketStatusUseCase } from './application/use-cases/update-ticket-status.use-case';
 import { AssignTicketUseCase } from './application/use-cases/assign-ticket.use-case';
 import { ReplyAgentTicketUseCase } from './application/use-cases/reply-agent-ticket.use-case';
+import { AddInternalCommentUseCase } from './application/use-cases/add-internal-comment.use-case';
 import { TicketEventListener } from './application/events/ticket-event.listener';
 
 // Infrastructure imports
@@ -93,6 +94,7 @@ import { DepartmentEventsListener } from './listeners/department-events.listener
     UpdateTicketStatusUseCase,
     AssignTicketUseCase,
     ReplyAgentTicketUseCase,
+    AddInternalCommentUseCase,
     
     // Event listeners
     TicketEventListener,
@@ -113,6 +115,7 @@ import { DepartmentEventsListener } from './listeners/department-events.listener
     UpdateTicketStatusUseCase,
     AssignTicketUseCase,
     ReplyAgentTicketUseCase,
+    AddInternalCommentUseCase,
   ]
 })
 export class TicketModule {}

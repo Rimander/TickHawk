@@ -29,6 +29,10 @@ export class CommentDto {
   @Expose()
   @Type(() => FileTicketDto)
   files: FileTicketDto[];
+  
+  @ApiProperty({ required: false })
+  @Expose()
+  internal?: boolean;
 
   @ApiProperty()
   @Expose()

@@ -30,6 +30,12 @@ export class Comment extends Document {
     default: [],
   })
   files: FileTicket[];
+  
+  @Prop({
+    required: false,
+    default: false
+  })
+  internal: boolean;
 
   @Prop({})
   createdAt: Date;

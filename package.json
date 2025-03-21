@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Ticket Management System",
   "license": "AGPL-3.0",
+  "packageManager": "^npm@6.32.4",
   "workspaces": [
     "api",
     "app"

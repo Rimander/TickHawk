@@ -26,6 +26,7 @@ export interface Comment {
     user: UserTicket,
     content: string,
     hours: number,
+    internal?: boolean,
     createdAt: Date,
     updatedAt: Date,
 }
@@ -54,4 +55,5 @@ export interface Ticket {
     events?: Event[],
     createdAt: Date,
     updatedAt: Date,
+    hasInternalComments?: boolean,
 }
